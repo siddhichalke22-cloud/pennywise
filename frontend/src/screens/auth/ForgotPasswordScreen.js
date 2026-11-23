@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Alert } from 'react-native';
-import { Button } from '../../components/common/Button';
-import { Input } from '../../components/common/Input';
-import { Header } from '../../components/common/Header';
-import { colors } from '../../theme/colors';
-import { spacing } from '../../theme/spacing';
+import { View, Text, StyleSheet, Alert, StatusBar } from 'react-native';
+import CustomButton from '../../components/common/CustomButton';
+import CustomInput from '../../components/common/CustomInput';
+import Header from '../../components/common/Header';
+import colors from '../../theme/colors';
+import spacing from '../../theme/spacing';
+import typography from '../../theme/typography';
+import { moderateScale } from '../../utils/responsive';
 
 export const ForgotPasswordScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -20,34 +22,52 @@ export const ForgotPasswordScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Header title="Reset Password" onBack={() => navigation.goBack()} />
+      <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
+      <Header
+        title="Reset Password"
+        showBack
+        onBack={() => navigation.goBack()}
+      />
       <View style={styles.content}>
         {submitted ? (
           <View style={styles.successArea}>
-            <Text style={styles.successIcon}>✉️</Text>
+            <View style={styles.successCircle}>
+              <Text style={styles.successIcon}>✉️</Text>
+            </View>
             <Text style={styles.successTitle}>Check your inbox</Text>
             <Text style={styles.successText}>
               We sent password reset instructions to {email}.
             </Text>
-            <Button
-              title="Back to Login"
+            <CustomButton
+              title="Back to Sign In"
+              variant="primary"
+              size="lg"
+              fullWidth
               onPress={() => navigation.navigate('Login')}
-              style={{ marginTop: spacing.lg }}
+              style={{ marginTop: moderateScale(24) }}
             />
           </View>
         ) : (
           <View>
             <Text style={styles.infoText}>
-              Enter the email associated with your account and we'll send a link to reset your password.
+              Enter the email address associated with your Pennywise account and
+              we'll send you instructions to reset your password.
             </Text>
-            <Input
+            <CustomInput
               label="Email Address"
               placeholder="e.g. alex@example.com"
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
             />
-            <Button title="Send Reset Link" onPress={handleSubmit} />
+            <CustomButton
+              title="Send Reset Link"
+              variant="primary"
+              size="lg"
+              fullWidth
+              onPress={handleSubmit}
+              style={{ marginTop: moderateScale(12) }}
+            />
           </View>
         )}
       </View>
@@ -61,31 +81,40 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
   },
   content: {
-    padding: spacing.lg,
+    padding: moderateScale(20),
   },
   infoText: {
-    fontSize: 14,
+    ...typography.body,
     color: colors.textSecondary,
-    marginBottom: spacing.lg,
-    lineHeight: 20,
+    marginBottom: moderateScale(20),
+    lineHeight: moderateScale(22),
   },
   successArea: {
     alignItems: 'center',
-    paddingTop: spacing.xxl,
+    paddingTop: moderateScale(40),
+  },
+  successCircle: {
+    width: moderateScale(80),
+    height: moderateScale(80),
+    borderRadius: moderateScale(40),
+    backgroundColor: colors.secondarySubtle,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   successIcon: {
-    fontSize: 50,
+    fontSize: moderateScale(36),
   },
   successTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    marginTop: spacing.md,
+    ...typography.h2,
+    color: colors.text,
+    marginTop: moderateScale(16),
   },
   successText: {
-    fontSize: 14,
+    ...typography.body,
     color: colors.textSecondary,
     textAlign: 'center',
-    marginTop: spacing.xs,
+    marginTop: moderateScale(6),
+    lineHeight: moderateScale(20),
   },
 });
 

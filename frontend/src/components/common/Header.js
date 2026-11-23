@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  StatusBar,
   Platform,
 } from 'react-native';
 import colors from '../../theme/colors';
@@ -14,7 +13,7 @@ import { moderateScale } from '../../utils/responsive';
 
 /**
  * Reusable Fintech Header
- * Supports title, subtitle, rounded back button, custom right action button/icon,
+ * Supports title, subtitle, rounded back button, custom right action element,
  * and transparent or solid styling.
  */
 export const Header = ({
@@ -23,10 +22,13 @@ export const Header = ({
   onBack,
   showBack = false,
   rightElement,
+  rightAction, // alias for rightElement
   transparent = false,
   centerTitle = false,
   style,
 }) => {
+  const rightSlot = rightElement || rightAction;
+
   return (
     <View
       style={[
@@ -73,8 +75,8 @@ export const Header = ({
         </View>
       </View>
 
-      {rightElement && (
-        <View style={styles.rightContainer}>{rightElement}</View>
+      {rightSlot && (
+        <View style={styles.rightContainer}>{rightSlot}</View>
       )}
     </View>
   );

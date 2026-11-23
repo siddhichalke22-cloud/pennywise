@@ -1,63 +1,89 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
-import { groupApi } from '../../services/api/groupApi';
-import { useExpenses } from '../../hooks/useExpenses';
-import { Header } from '../../components/common/Header';
-import { Button } from '../../components/common/Button';
-import { ExpenseListItem } from '../../components/expense/ExpenseListItem';
-import { colors } from '../../theme/colors';
-import { spacing } from '../../theme/spacing';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  StatusBar,
+} from 'react-native';
+import Header from '../../components/common/Header';
+import CustomButton from '../../components/common/CustomButton';
+import ExpenseCard from '../../components/expense/ExpenseCard';
+import EmptyState from '../../components/common/EmptyState';
+import colors from '../../theme/colors';
+import spacing from '../../theme/spacing';
+import typography from '../../theme/typography';
+import { moderateScale } from '../../utils/responsive';
+import { dummyGroups, dummyExpenses } from '../../data/dummyData';
 
 export const GroupDetailScreen = ({ route, navigation }) => {
   const { groupId, groupName } = route.params;
-  const [group, setGroup] = useState(null);
-  const { expenses, loading, fetchExpenses } = useExpenses(groupId);
 
-  useEffect(() => {
-    groupApi.getGroupById(groupId).then((res) => setGroup(res.data)).catch(console.error);
-    fetchExpenses();
-  }, [groupId, fetchExpenses]);
+  const currentGroup =
+    dummyGroups.find((g) => g.id === groupId) || {
+      id: groupId,
+      name: groupName || 'Group',
+      membersCount: 4,
+      emoji: '👥',
+      category: 'Trip',
+    };
+
+  const groupExpenses = dummyExpenses.filter(
+    (e) => e.groupId === groupId || !groupId
+  );
 
   return (
     <View style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
       <Header
-        title={groupName || 'Group'}
-        subtitle={group ? `${group.members?.length || 0} members` : ''}
+        title={currentGroup.name}
+        subtitle={`${currentGroup.membersCount || 4} members • ${currentGroup.category}`}
+        showBack
         onBack={() => navigation.goBack()}
         rightAction={
-          <Button
+          <CustomButton
             title="+ Add Bill"
             size="sm"
-            onPress={() => navigation.navigate('AddExpense', { groupId })}
+            variant="primary"
+            onPress={() => navigation.navigate('AddExpense', { groupId: currentGroup.id })}
           />
         }
       />
 
+      {/* Settle Up Action Banner */}
       <View style={styles.actionsBar}>
-        <Button
-          title="Settle Up"
-          variant="outline"
-          size="sm"
-          onPress={() => navigation.navigate('SettleUp', { groupId })}
-          style={styles.actionBtn}
+        <CustomButton
+          title="⇄ Settle Up Group Debts"
+          variant="secondary"
+          size="md"
+          fullWidth
+          onPress={() => navigation.navigate('SettleUp', { groupId: currentGroup.id })}
         />
       </View>
 
       <FlatList
-        data={expenses}
-        keyExtractor={(item) => item._id}
-        refreshing={loading}
-        onRefresh={fetchExpenses}
+        data={groupExpenses.length > 0 ? groupExpenses : dummyExpenses}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
-          <ExpenseListItem
+          <ExpenseCard
             expense={item}
-            onPress={() => navigation.navigate('ExpenseDetail', { expenseId: item._id })}
+            onPress={() =>
+              navigation.navigate('ExpenseDetail', { expenseId: item.id })
+            }
           />
         )}
         ListEmptyComponent={
-          <View style={styles.empty}>
-            <Text style={styles.emptyText}>No expenses logged yet in this group.</Text>
-          </View>
+          <EmptyState
+            icon="🧾"
+            title="No expenses logged yet"
+            description="Start splitting expenses in this group by tapping the Add Bill button."
+            actionTitle="+ Add First Bill"
+            onAction={() =>
+              navigation.navigate('AddExpense', { groupId: currentGroup.id })
+            }
+          />
         }
       />
     </View>
@@ -70,22 +96,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   actionsBar: {
-    flexDirection: 'row',
-    padding: spacing.md,
+    paddingHorizontal: moderateScale(16),
+    paddingVertical: moderateScale(10),
     backgroundColor: colors.white,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: colors.borderLight,
   },
-  actionBtn: {
-    flex: 1,
-  },
-  empty: {
-    padding: spacing.xl,
-    alignItems: 'center',
-  },
-  emptyText: {
-    color: colors.textSecondary,
-    fontSize: 14,
+  listContent: {
+    padding: moderateScale(16),
   },
 });
 

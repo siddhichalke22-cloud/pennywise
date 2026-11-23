@@ -1,70 +1,112 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Alert } from 'react-native';
-import { expenseApi } from '../../services/api/expenseApi';
-import { Header } from '../../components/common/Header';
-import { Button } from '../../components/common/Button';
+import React from 'react';
+import { View, Text, StyleSheet, Alert, ScrollView, StatusBar } from 'react-native';
+import Header from '../../components/common/Header';
+import CustomButton from '../../components/common/CustomButton';
+import colors from '../../theme/colors';
+import spacing from '../../theme/spacing';
+import typography from '../../theme/typography';
+import { moderateScale } from '../../utils/responsive';
 import { formatCurrency } from '../../utils/currencyFormatter';
-import { formatDate } from '../../utils/dateFormatter';
-import { colors } from '../../theme/colors';
-import { spacing } from '../../theme/spacing';
+import { dummyExpenses } from '../../data/dummyData';
 
 export const ExpenseDetailScreen = ({ route, navigation }) => {
   const { expenseId } = route.params;
-  const [expense, setExpense] = useState(null);
 
-  useEffect(() => {
-    expenseApi.getExpenseById(expenseId).then((res) => setExpense(res.data)).catch(console.error);
-  }, [expenseId]);
+  const expense =
+    dummyExpenses.find((e) => e.id === expenseId) || dummyExpenses[0];
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     Alert.alert('Delete Expense', 'Are you sure you want to remove this expense?', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Delete',
         style: 'destructive',
-        onPress: async () => {
-          await expenseApi.deleteExpense(expenseId);
+        onPress: () => {
+          Alert.alert('Expense Deleted', 'The expense has been removed.');
           navigation.goBack();
         },
       },
     ]);
   };
 
-  if (!expense) {
-    return <View style={styles.container} />;
-  }
-
   return (
     <View style={styles.container}>
-      <Header title="Expense Details" onBack={() => navigation.goBack()} />
-      <View style={styles.content}>
-        <Text style={styles.description}>{expense.description}</Text>
-        <Text style={styles.amount}>
-          {formatCurrency(expense.amount, expense.currency)}
-        </Text>
-        <Text style={styles.meta}>
-          Paid by {expense.paidBy?.name || 'Someone'} on {formatDate(expense.date)}
-        </Text>
+      <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
+      <Header
+        title="Expense Details"
+        showBack
+        onBack={() => navigation.goBack()}
+      />
 
-        <View style={styles.splitsContainer}>
-          <Text style={styles.splitsTitle}>Splits</Text>
-          {expense.splits?.map((split, idx) => (
-            <View key={idx} style={styles.splitRow}>
-              <Text style={styles.memberName}>{split.user?.name || 'Member'}</Text>
-              <Text style={styles.splitAmount}>
-                {formatCurrency(split.amount, expense.currency)}
-              </Text>
+      <ScrollView contentContainerStyle={styles.content}>
+        {/* Main Card */}
+        <View style={styles.heroCard}>
+          <View style={styles.badgeRow}>
+            <View style={styles.categoryBadge}>
+              <Text style={styles.categoryIcon}>{expense.categoryIcon || '🧾'}</Text>
             </View>
-          ))}
+            <View style={styles.groupPill}>
+              <Text style={styles.groupText}>{expense.groupName}</Text>
+            </View>
+          </View>
+
+          <Text style={styles.title}>{expense.title}</Text>
+          <Text style={styles.amount}>
+            {formatCurrency(expense.amount, expense.currency)}
+          </Text>
+
+          <Text style={styles.meta}>
+            Paid by <Text style={styles.bold}>{expense.paidBy?.name || 'Someone'}</Text> • {expense.date}
+          </Text>
         </View>
 
-        <Button
+        {/* Split Breakdown */}
+        <View style={styles.splitsCard}>
+          <Text style={styles.splitsTitle}>SPLIT ALLOCATION ({expense.splitType || 'EQUAL'})</Text>
+
+          <View style={styles.splitRow}>
+            <Text style={styles.memberName}>Alex Rivera (You)</Text>
+            <Text style={styles.splitAmount}>
+              {formatCurrency(expense.userImpact?.amount || 21.05, expense.currency)}
+            </Text>
+          </View>
+          <View style={styles.divider} />
+
+          <View style={styles.splitRow}>
+            <Text style={styles.memberName}>Sarah Jenkins</Text>
+            <Text style={styles.splitAmount}>
+              {formatCurrency(expense.userImpact?.amount || 21.05, expense.currency)}
+            </Text>
+          </View>
+          <View style={styles.divider} />
+
+          <View style={styles.splitRow}>
+            <Text style={styles.memberName}>Marcus Chen</Text>
+            <Text style={styles.splitAmount}>
+              {formatCurrency(expense.userImpact?.amount || 21.05, expense.currency)}
+            </Text>
+          </View>
+          <View style={styles.divider} />
+
+          <View style={styles.splitRow}>
+            <Text style={styles.memberName}>Maya Patel</Text>
+            <Text style={styles.splitAmount}>
+              {formatCurrency(expense.userImpact?.amount || 21.05, expense.currency)}
+            </Text>
+          </View>
+        </View>
+
+        {/* Delete Action */}
+        <CustomButton
           title="Delete Expense"
-          variant="danger"
+          variant="outline"
+          size="lg"
+          fullWidth
           onPress={handleDelete}
-          style={{ marginTop: spacing.xl }}
+          textStyle={{ color: colors.dangerDark }}
+          style={styles.deleteBtn}
         />
-      </View>
+      </ScrollView>
     </View>
   );
 };
@@ -72,50 +114,102 @@ export const ExpenseDetailScreen = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.white,
+    backgroundColor: colors.background,
   },
   content: {
-    padding: spacing.lg,
+    padding: moderateScale(16),
   },
-  description: {
-    fontSize: 24,
+  heroCard: {
+    backgroundColor: colors.white,
+    borderRadius: spacing.borderRadius.xl,
+    padding: moderateScale(22),
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+    ...spacing.shadows.subtle,
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: moderateScale(12),
+  },
+  categoryBadge: {
+    width: moderateScale(48),
+    height: moderateScale(48),
+    borderRadius: spacing.borderRadius.md,
+    backgroundColor: colors.secondarySubtle,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: moderateScale(10),
+  },
+  categoryIcon: {
+    fontSize: moderateScale(24),
+  },
+  groupPill: {
+    backgroundColor: colors.secondaryGhost,
+    borderRadius: spacing.borderRadius.xs,
+    paddingHorizontal: moderateScale(10),
+    paddingVertical: moderateScale(4),
+  },
+  groupText: {
+    ...typography.caption,
+    color: colors.primaryDark,
+    fontWeight: '700',
+  },
+  title: {
+    ...typography.h2,
+    color: colors.text,
+    fontSize: moderateScale(22),
+  },
+  amount: {
+    ...typography.displayBalance,
+    color: colors.primaryDark,
+    marginVertical: moderateScale(6),
+  },
+  meta: {
+    ...typography.body,
+    color: colors.textSecondary,
+  },
+  bold: {
     fontWeight: '700',
     color: colors.text,
   },
-  amount: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: colors.primaryDark,
-    marginTop: spacing.xs,
-  },
-  meta: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    marginTop: spacing.xs,
-  },
-  splitsContainer: {
-    marginTop: spacing.xl,
-    paddingTop: spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
+  splitsCard: {
+    backgroundColor: colors.white,
+    borderRadius: spacing.borderRadius.lg,
+    padding: moderateScale(18),
+    marginTop: moderateScale(14),
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+    ...spacing.shadows.subtle,
   },
   splitsTitle: {
-    fontSize: 16,
+    ...typography.caption,
+    color: colors.textSecondary,
     fontWeight: '700',
-    marginBottom: spacing.sm,
+    letterSpacing: 0.8,
+    marginBottom: moderateScale(12),
   },
   splitRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: spacing.xs,
+    alignItems: 'center',
+    paddingVertical: moderateScale(8),
   },
   memberName: {
-    fontSize: 15,
+    ...typography.bodyBold,
     color: colors.text,
   },
   splitAmount: {
-    fontSize: 15,
-    fontWeight: '600',
+    ...typography.bodyBold,
+    color: colors.primaryDark,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: colors.borderLight,
+  },
+  deleteBtn: {
+    marginTop: moderateScale(20),
+    borderColor: colors.dangerLight,
   },
 });
 

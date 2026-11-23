@@ -1,43 +1,41 @@
-import React, { useEffect } from 'react';
-import { View, FlatList, StyleSheet } from 'react-native';
-import { useGroups } from '../../hooks/useGroups';
-import { Header } from '../../components/common/Header';
-import { Button } from '../../components/common/Button';
-import { GroupCard } from '../../components/group/GroupCard';
-import { colors } from '../../theme/colors';
-import { spacing } from '../../theme/spacing';
+import React, { useState } from 'react';
+import { View, FlatList, StyleSheet, StatusBar } from 'react-native';
+import Header from '../../components/common/Header';
+import CustomButton from '../../components/common/CustomButton';
+import GroupCard from '../../components/group/GroupCard';
+import colors from '../../theme/colors';
+import { moderateScale } from '../../utils/responsive';
+import { dummyGroups } from '../../data/dummyData';
 
 export const GroupsScreen = ({ navigation }) => {
-  const { groups, loading, fetchGroups } = useGroups();
-
-  useEffect(() => {
-    fetchGroups();
-  }, [fetchGroups]);
+  const [groups, setGroups] = useState(dummyGroups);
 
   return (
     <View style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
       <Header
         title="Your Groups"
+        subtitle="Shared expense communities"
         rightAction={
-          <Button
+          <CustomButton
             title="+ New Group"
             size="sm"
+            variant="primary"
             onPress={() => navigation.navigate('CreateGroup')}
           />
         }
       />
       <FlatList
         data={groups}
-        keyExtractor={(item) => item._id}
-        refreshing={loading}
-        onRefresh={fetchGroups}
+        keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
+        showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
           <GroupCard
             group={item}
             onPress={() =>
               navigation.navigate('GroupDetail', {
-                groupId: item._id,
+                groupId: item.id,
                 groupName: item.name,
               })
             }
@@ -54,7 +52,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   list: {
-    padding: spacing.md,
+    padding: moderateScale(16),
   },
 });
 
