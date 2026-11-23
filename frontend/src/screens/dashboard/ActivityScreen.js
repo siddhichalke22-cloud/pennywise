@@ -1,32 +1,34 @@
 import React from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
-import { Header } from '../../components/common/Header';
-import { colors } from '../../theme/colors';
-import { spacing } from '../../theme/spacing';
-
-const mockActivities = [
-  { id: '1', text: 'You added "Dinner at Joe\'s"', time: '2 hours ago', icon: '🍔' },
-  { id: '2', text: 'Sarah settled up $25.00', time: 'Yesterday', icon: '✅' },
-  { id: '3', text: 'You joined group "Goa Trip"', time: '3 days ago', icon: '🏖️' },
-];
+import { View, Text, StyleSheet, FlatList, StatusBar } from 'react-native';
+import Header from '../../components/common/Header';
+import colors from '../../theme/colors';
+import spacing from '../../theme/spacing';
+import typography from '../../theme/typography';
+import { moderateScale } from '../../utils/responsive';
+import { dummyRecentActivities } from '../../data/dummyData';
 
 export const ActivityScreen = () => {
   return (
     <View style={styles.container}>
-      <Header title="Recent Activity" />
+      <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
+      <Header title="Activity Feed" subtitle="Audit trail across all your groups" />
+
       <FlatList
-        data={mockActivities}
+        data={dummyRecentActivities}
         keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.listContent}
         renderItem={({ item }) => (
-          <View style={styles.item}>
-            <Text style={styles.icon}>{item.icon}</Text>
+          <View style={styles.card}>
+            <View style={styles.iconCircle}>
+              <Text style={styles.iconEmoji}>{item.icon}</Text>
+            </View>
             <View style={styles.textContainer}>
-              <Text style={styles.activityText}>{item.text}</Text>
+              <Text style={styles.title}>{item.title}</Text>
+              <Text style={styles.subtitle}>{item.subtitle}</Text>
               <Text style={styles.timeText}>{item.time}</Text>
             </View>
           </View>
         )}
-        contentContainerStyle={styles.listContent}
       />
     </View>
   );
@@ -38,33 +40,49 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   listContent: {
-    padding: spacing.md,
+    padding: moderateScale(16),
   },
-  item: {
+  card: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.white,
-    padding: spacing.md,
-    borderRadius: spacing.borderRadius.md,
-    marginBottom: spacing.xs,
+    padding: moderateScale(16),
+    borderRadius: spacing.borderRadius.lg,
+    marginBottom: moderateScale(10),
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.borderLight,
+    ...spacing.shadows.subtle,
   },
-  icon: {
-    fontSize: 24,
-    marginRight: spacing.md,
+  iconCircle: {
+    width: moderateScale(46),
+    height: moderateScale(46),
+    borderRadius: spacing.borderRadius.md,
+    backgroundColor: colors.secondarySubtle,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: moderateScale(14),
+  },
+  iconEmoji: {
+    fontSize: moderateScale(22),
   },
   textContainer: {
     flex: 1,
   },
-  activityText: {
-    fontSize: 15,
+  title: {
+    ...typography.h4,
     color: colors.text,
+    fontSize: moderateScale(14),
+  },
+  subtitle: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginTop: moderateScale(2),
   },
   timeText: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginTop: 2,
+    ...typography.caption,
+    color: colors.primary,
+    fontWeight: '600',
+    marginTop: moderateScale(4),
   },
 });
 

@@ -2,20 +2,25 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { navigationRef } from './navigationRef';
 import AuthNavigator from './AuthNavigator';
-import TabNavigator from './TabNavigator';
+import BottomTabNavigation from './BottomTabNavigation';
 import { useAuth } from '../hooks/useAuth';
-import LoadingSpinner from '../components/common/LoadingSpinner';
+import LoadingIndicator from '../components/common/LoadingIndicator';
 
+/**
+ * Root AppNavigator
+ * Automatically switches between unauthenticated flow (Splash/Welcome/Login/Register)
+ * and authenticated flow (BottomTabNavigation hosting HomeScreen).
+ */
 export const AppNavigator = () => {
   const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
-    return <LoadingSpinner text="Launching Pennywise..." />;
+    return <LoadingIndicator fullScreen text="Launching Pennywise..." />;
   }
 
   return (
     <NavigationContainer ref={navigationRef}>
-      {isAuthenticated ? <TabNavigator /> : <AuthNavigator />}
+      {isAuthenticated ? <BottomTabNavigation /> : <AuthNavigator />}
     </NavigationContainer>
   );
 };
