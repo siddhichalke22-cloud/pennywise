@@ -1,6 +1,6 @@
-import { colors } from './colors';
-import { typography } from './typography';
-import { spacing } from './spacing';
+import colors from './colors';
+import typography from './typography';
+import spacing from './spacing';
 
 export const theme = {
   colors,
@@ -8,4 +8,5 @@ export const theme = {
   spacing,
 };
 
+export { colors, typography, spacing };
 export default theme;
