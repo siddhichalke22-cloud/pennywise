@@ -1,21 +1,51 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Alert,
+  StatusBar,
+} from 'react-native';
+import colors from '../../theme/colors';
+import spacing from '../../theme/spacing';
+import typography from '../../theme/typography';
+import { moderateScale } from '../../utils/responsive';
+import CustomButton from '../../components/common/CustomButton';
+import CustomInput from '../../components/common/CustomInput';
+import Header from '../../components/common/Header';
 import { useAuth } from '../../hooks/useAuth';
-import { Button } from '../../components/common/Button';
-import { Input } from '../../components/common/Input';
-import { colors } from '../../theme/colors';
-import { spacing } from '../../theme/spacing';
 
+/**
+ * Fintech Branded RegisterScreen
+ * Full registration flow with name, email, password,
+ * confirmation, and terms notice.
+ */
 export const RegisterScreen = ({ navigation }) => {
-  const { register } = useAuth();
+  const { register, loginDemo } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
-    if (!name || !email || !password) {
-      Alert.alert('Validation Error', 'Please fill in all fields');
+    if (!name.trim() || !email.trim() || !password) {
+      Alert.alert('Validation Error', 'Please complete all required fields.');
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert(
+        'Weak Password',
+        'Password must be at least 6 characters long.'
+      );
+      return;
+    }
+
+    if (confirmPassword && password !== confirmPassword) {
+      Alert.alert('Mismatch', 'Passwords do not match.');
       return;
     }
 
@@ -31,49 +61,107 @@ export const RegisterScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.headerArea}>
-        <Text style={styles.title}>Create Account</Text>
-        <Text style={styles.subtitle}>Join Pennywise to manage group bills</Text>
-      </View>
+      <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
 
-      <View style={styles.formArea}>
-        <Input
-          label="Full Name"
-          placeholder="e.g. Jane Doe"
-          value={name}
-          onChangeText={setName}
-        />
+      <Header
+        title=""
+        showBack
+        onBack={() => navigation.goBack()}
+        transparent
+      />
 
-        <Input
-          label="Email Address"
-          placeholder="e.g. jane@example.com"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-        />
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Title Area */}
+        <View style={styles.titleSection}>
+          <View style={styles.badgePill}>
+            <Text style={styles.badgeText}>GET STARTED</Text>
+          </View>
+          <Text style={styles.title}>Create your account 🚀</Text>
+          <Text style={styles.subtitle}>
+            Join Pennywise to effortlessly manage group expenses and settle debts.
+          </Text>
+        </View>
 
-        <Input
-          label="Password (min 6 characters)"
-          placeholder="••••••••"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
+        {/* Input Form */}
+        <View style={styles.formCard}>
+          <CustomInput
+            label="Full Name"
+            placeholder="e.g. Alex Rivera"
+            value={name}
+            onChangeText={setName}
+            autoCapitalize="words"
+          />
 
-        <Button
-          title="Create Account"
-          onPress={handleRegister}
-          loading={loading}
-          style={styles.button}
-        />
-      </View>
+          <CustomInput
+            label="Email Address"
+            placeholder="e.g. alex@example.com"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
 
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>Already have an account? </Text>
-        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-          <Text style={styles.loginLink}>Sign In</Text>
-        </TouchableOpacity>
-      </View>
+          <CustomInput
+            label="Password"
+            placeholder="At least 6 characters"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            helperText="Must be minimum 6 characters long"
+          />
+
+          <CustomInput
+            label="Confirm Password"
+            placeholder="Re-enter password"
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            secureTextEntry
+          />
+
+          {/* Terms Notice */}
+          <Text style={styles.termsText}>
+            By creating an account, you agree to the{' '}
+            <Text style={styles.termsLink}>Terms of Service</Text> and{' '}
+            <Text style={styles.termsLink}>Privacy Policy</Text>.
+          </Text>
+
+          <CustomButton
+            title="Create Account"
+            size="lg"
+            variant="primary"
+            fullWidth
+            loading={loading}
+            onPress={handleRegister}
+            style={styles.registerBtn}
+          />
+
+          {/* Demo shortcut */}
+          <CustomButton
+            title="⚡ Fill with Demo User"
+            size="md"
+            variant="secondary"
+            fullWidth
+            onPress={() => {
+              setName('Alex Rivera');
+              setEmail('alex.rivera@pennywise.app');
+              setPassword('password123');
+              setConfirmPassword('password123');
+            }}
+            style={styles.demoFillBtn}
+          />
+        </View>
+
+        {/* Bottom Switch Link */}
+        <View style={styles.footerLinkRow}>
+          <Text style={styles.footerPrompt}>Already have an account? </Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+            <Text style={styles.footerLink}>Sign In</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
     </View>
   );
 };
@@ -82,39 +170,72 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.white,
-    paddingHorizontal: spacing.lg,
-    justifyContent: 'center',
   },
-  headerArea: {
-    marginBottom: spacing.xl,
+  scrollContent: {
+    paddingHorizontal: moderateScale(22),
+    paddingBottom: moderateScale(36),
+  },
+  titleSection: {
+    marginTop: moderateScale(8),
+    marginBottom: moderateScale(20),
+  },
+  badgePill: {
+    alignSelf: 'flex-start',
+    backgroundColor: colors.secondarySubtle,
+    borderRadius: spacing.borderRadius.xs,
+    paddingHorizontal: moderateScale(10),
+    paddingVertical: moderateScale(3),
+    marginBottom: moderateScale(10),
+  },
+  badgeText: {
+    ...typography.caption,
+    color: colors.primaryDark,
+    fontWeight: '700',
+    letterSpacing: 0.6,
   },
   title: {
-    fontSize: 28,
-    fontWeight: '800',
+    ...typography.h1,
     color: colors.text,
+    fontSize: moderateScale(28),
   },
   subtitle: {
-    fontSize: 15,
+    ...typography.body,
     color: colors.textSecondary,
-    marginTop: spacing.xs,
+    marginTop: moderateScale(6),
+    lineHeight: moderateScale(22),
   },
-  formArea: {
-    width: '100%',
+  formCard: {
+    backgroundColor: colors.white,
   },
-  button: {
-    marginTop: spacing.sm,
+  termsText: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    lineHeight: moderateScale(18),
+    marginVertical: moderateScale(12),
   },
-  footer: {
+  termsLink: {
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  registerBtn: {
+    marginBottom: moderateScale(10),
+  },
+  demoFillBtn: {
+    marginBottom: moderateScale(10),
+  },
+  footerLinkRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: spacing.xl,
+    alignItems: 'center',
+    marginTop: moderateScale(12),
   },
-  footerText: {
+  footerPrompt: {
+    ...typography.body,
     color: colors.textSecondary,
   },
-  loginLink: {
+  footerLink: {
+    ...typography.bodyBold,
     color: colors.primary,
-    fontWeight: '700',
   },
 });
 
