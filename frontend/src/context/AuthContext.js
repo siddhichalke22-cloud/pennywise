@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { tokenStorage } from '../services/storage/tokenStorage';
-import { authApi } from '../services/api/authApi';
+import { currentUser as mockUser } from '../data/dummyData';
 
 export const AuthContext = createContext(null);
 
@@ -31,27 +31,40 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    const res = await authApi.login({ email, password });
-    const { user: userData, token: userToken } = res.data;
+    // Simulated authentication with dummy data for UI testing
+    const demoUser = {
+      ...mockUser,
+      email: email || mockUser.email,
+    };
+    const demoToken = 'mock_jwt_token_pennywise_dev_12345';
 
-    await tokenStorage.saveToken(userToken);
-    await tokenStorage.saveUser(userData);
+    await tokenStorage.saveToken(demoToken);
+    await tokenStorage.saveUser(demoUser);
 
-    setToken(userToken);
-    setUser(userData);
-    return res;
+    setToken(demoToken);
+    setUser(demoUser);
+    return { data: { user: demoUser, token: demoToken } };
+  };
+
+  const loginDemo = async () => {
+    return login(mockUser.email, 'password123');
   };
 
   const register = async (name, email, password) => {
-    const res = await authApi.register({ name, email, password });
-    const { user: userData, token: userToken } = res.data;
+    const newUser = {
+      ...mockUser,
+      name: name || 'Demo Member',
+      firstName: (name || 'Demo').split(' ')[0],
+      email: email || mockUser.email,
+    };
+    const demoToken = 'mock_jwt_token_pennywise_dev_12345';
 
-    await tokenStorage.saveToken(userToken);
-    await tokenStorage.saveUser(userData);
+    await tokenStorage.saveToken(demoToken);
+    await tokenStorage.saveUser(newUser);
 
-    setToken(userToken);
-    setUser(userData);
-    return res;
+    setToken(demoToken);
+    setUser(newUser);
+    return { data: { user: newUser, token: demoToken } };
   };
 
   const logout = async () => {
@@ -68,6 +81,7 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated: !!token,
         isLoading,
         login,
+        loginDemo,
         register,
         logout,
       }}
