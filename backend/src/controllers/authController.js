@@ -11,7 +11,8 @@ const register = async (req, res, next) => {
     const result = await authService.registerUser({ name, email, password });
     return sendResponse(res, 201, true, 'User registered successfully', result);
   } catch (error) {
-    return sendResponse(res, 400, false, error.message);
+    const statusCode = error.statusCode || 400;
+    return sendResponse(res, statusCode, false, error.message);
   }
 };
 
@@ -25,7 +26,8 @@ const login = async (req, res, next) => {
     const result = await authService.loginUser({ email, password });
     return sendResponse(res, 200, true, 'Login successful', result);
   } catch (error) {
-    return sendResponse(res, 401, false, error.message);
+    const statusCode = error.statusCode || 401;
+    return sendResponse(res, statusCode, false, error.message);
   }
 };
 
