@@ -11,24 +11,38 @@ export const apiClient = axios.create({
   },
 });
 
-// Request interceptor: attach bearer token
+// Request interceptor: attach bearer token to requests if available
 apiClient.interceptors.request.use(
   async (config) => {
-    const token = await tokenStorage.getToken();
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    try {
+      const token = await tokenStorage.getToken();
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch (err) {
+      console.warn('[ApiClient] Failed to retrieve token from storage:', err);
     }
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// Response interceptor: extract response body
+// Response interceptor: extract response payload and normalize error messages
 apiClient.interceptors.response.use(
   (response) => response.data,
   (error) => {
-    const message = error.response?.data?.message || error.message || 'Network error';
-    return Promise.reject(new Error(message));
+    const responseData = error.response?.data;
+    const message =
+      responseData?.message ||
+      (responseData?.errors && responseData.errors[0]?.msg) ||
+      error.message ||
+      'Network request failed. Please check your connection.';
+
+    const customError = new Error(message);
+    customError.statusCode = error.response?.status;
+    customError.data = responseData;
+    customError.errors = responseData?.errors;
+    return Promise.reject(customError);
   }
 );
 
